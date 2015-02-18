@@ -1,0 +1,38 @@
+{
+  "ProjectName": "Gazette App",
+  "ProjectGuid": "ef7b7da1-699b-4b16-ba53-088c633a8bcb",
+  "projectVersion": 1,
+  "AppIdentifier": "com.telerik.GazetteApp",
+  "DisplayName": "Gazette App",
+  "Author": "",
+  "Description": "",
+  "BundleVersion": "1.0",
+  "AndroidVersionCode": "1",
+  "iOSDeviceFamily": [
+    "1",
+    "2"
+  ],
+  "iOSBackgroundMode": [],
+  "ProjectTypeGuids": "{070BCB52-5A75-4F8C-A973-144AF0EAFCC9}",
+  "FrameworkVersion": "3.5.0",
+  "AndroidPermissions": [],
+  "DeviceOrientations": [
+    "Portrait",
+    "Landscape"
+  ],
+  "AndroidHardwareAcceleration": "false",
+  "iOSStatusBarStyle": "Default",
+  "Framework": "Cordova",
+  "WP8TileTitle": "",
+  "WP8Publisher": "",
+  "WP8Capabilities": [],
+  "WP8Requirements": [],
+  "WP8PublisherID": "{f7b214f2-7c76-4c8d-8218-8de3703bbab5}",
+  "WP8ProductID": "{34ad234f-56e9-4b72-bd32-5f0e616248dd}",
+  "WPSdk": "8.0",
+  "WP8SupportedResolutions": [
+    "ID_RESOLUTION_WVGA",
+    "ID_RESOLUTION_WXGA",
+    "ID_RESOLUTION_HD720P"
+  ]
+}
