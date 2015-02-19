@@ -6,25 +6,7 @@
     var app;
 
     // create an object to store the models for each view
-    window.APP = {
-      models: {
-        home: {
-          title: 'Home'
-        },
-        settings: {
-          title: 'Settings'
-        },
-        contacts: {
-          title: 'Contacts',
-          ds: new kendo.data.DataSource({
-            data: [{ id: 1, name: 'Bob' }, { id: 2, name: 'Mary' }, { id: 3, name: 'John' }]
-          }),
-          alert: function(e) {
-            alert(e.data.name);
-          }
-        }
-      }
-    };
+   
 
     // this function is called by Cordova when the application is loaded by the device
     document.addEventListener('deviceready', function () {  
@@ -40,10 +22,25 @@
         skin: 'flat',
 
         // the application needs to know which view to load first
-        initial: 'views/home.html'
+       transition: 'zoom'
       });
 
     }, false);
 
 
 }());
+
+$(document).ready(function(){
+  $("#owl-news").owlCarousel({autoPlay:true,responsive:true});
+ 
+
+  
+      window.setTimeout(function(){
+      $("#owl-sports").owlCarousel({autoPlay:true,responsive:true});
+    },500);
+   
+      window.setTimeout(function(){
+           $("#owl-lifestyle").owlCarousel({autoPlay:true,responsive:true});
+    },3500);
+
+});
