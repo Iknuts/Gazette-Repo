@@ -3,49 +3,732 @@
 <head>
     <title></title>
     <meta charset="utf-8" />
-    <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet" />
-    <link href="styles/main.css" rel="stylesheet" />
+ 
 
-    <script src="cordova.js"></script>
+				<link href="http://cdn.kendostatic.com/2014.1.318/styles/kendo.common.min.css" rel="stylesheet">
+    <link href="http://cdn.kendostatic.com/2014.1.318/styles/kendo.default.min.css" rel="stylesheet">
+    <link href="http://cdn.kendostatic.com/2014.1.318/styles/kendo.dataviz.min.css" rel="stylesheet">
+     <link href="http://cdn.kendostatic.com/2014.1.318/styles/kendo.dataviz.default.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20140204/json2.min.js"></script>
+ 
+     <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet" />
+        <link href="styles/main.css" rel="stylesheet" />
+      
+  <link href="styles/exported.css" rel="stylesheet" />
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    
+        <link rel="stylesheet" href="styles/stapel.css" />
+     <link rel="stylesheet" href="styles/custom.css" />
+      <link rel="stylesheet" href="styles/demo.css" />
+    
+ <link href="styles/gazette.css" rel="stylesheet">
+   <script src="scripts/modernizr.custom.63321.js"></script>
+
     <script src="kendo/js/jquery.min.js"></script>
-    <script src="kendo/js/kendo.mobile.min.js"></script>
+      <script src="scripts/jquery-1.9.1.min.js"></script>
+    <link rel="stylesheet" href="styles/slider-pro.min.css">
+ 
+          
+ 
+    <script src="scripts/jquery.sliderPro.min.js"></script>
+     
+    <script src="kendo/js/kendo.all.min.js"></script>
+        <script src="kendo/js/kendo.mobile.min.js"></script>
 
+<!-- Important Owl stylesheet -->
+<link rel="stylesheet" href="styles/owl.carousel.css">
+ 
+<!-- Default Theme -->
+<link rel="stylesheet" href="styles/owl.theme.css">
+ <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<!--  jQuery 1.7+  -->
+
+ 
+<!-- Include js plugin -->
+
+     
+         <script src="https://bs-static.cdn.telerik.com/1.2.13/everlive.all.min.js"></script>
+    			
     <script src="scripts/app.js"></script>
 
+   
+<script src="scripts/owl.carousel.min.js"></script>
+  
+    <script src="scripts/gazette.js"></script>
+ 
+     <script src="cordova.js"></script>
 </head>
 <body>
+    
  
+
+ 
+    
   <div data-role="layout" data-id="main">
     <div data-role="header">
       <div data-role="navbar">
-        <span data-role="view-title"></span>
-        <a data-role="button" href="#appDrawer" data-rel="drawer" data-align="left" data-icon="drawer-button"></a>
+        <span data-role="view-title" data-align="left">
+    <img src="images/gazette.png" style="width:50%" />
+          </span>
+        <a data-role="button" style="border-color:white" href="#appDrawer" data-rel="drawer" data-align="right" data-icon="drawer-button"></a>
       </div>
+        <ul data-role="listview" style="border-bottom: 1px solid grey;background-color:red;color:white">
+          <li class="headline_story" style="border-bottom: 1px solid grey;background-color:red;color:white">
+              
+              <span id="paper-date">Thursday 19 February 2015</span>
+              <span id="price">P9.00</span>
+            </li>
+        </ul>
+    </div>
+    </div>
+      <div data-role="layout" data-id="cards">
+    <div data-role="header">
+      <div data-role="navbar">
+      <span data-role="view-title">Cards</span>
+          <a data-role="button" data-icon="add"  data-align="right" href="#AddCard"  style="border-color:white" ></a>
+        <a data-role="button" style="border-color:white"  data-align="right" class="fa" data-icon="proceed"></a>
+      </div>
+        <ul data-role="listview" style="border-bottom: 1px solid grey;background-color:red;color:white">
+          <li class="headline_story" style="border-bottom: 1px solid grey;background-color:red;color:white">
+             <span id="vol">Vol 10. No 16. </span>
+              <span id="date">Thursday 19 February 2015</span>
+              <span id="price">P9.00</span>
+            </li>
+        </ul>
+    </div>
+    </div>
+  <div data-role="layout" data-id="account">
+    <div data-role="header">
+      <div data-role="navbar">
+        <span data-role="view-title" data-align="left">
+
+          </span>
+             <a data-align="left">
+              <img src="images/gazette.png"  style="height:32px"  />
+          </a>
+      <a data-role="button" style="border-color:white" data-rel="actionsheet"
+       onclick="openSheet()" data-align="right" class="fa fa-credit-card"   ><i ></i></a>
+     <a data-role="button" style="border-color:white"  data-align="right" data-icon="refresh"></a>
+        <a data-role="button" style="border-color:white" href="#appDrawer" data-rel="drawer" data-align="right" data-icon="drawer-button"></a>
+      </div>
+    </div>
+
+    <!-- application views will be rendered here -->
+     
+  </div>
+  <div data-role="layout" data-id="shelf">
+    <div data-role="header">
+      <div data-role="navbar">
+        <span data-role="view-title" id="stand-title" >
+Newspapers
+          </span>
+                     <a data-role="backbutton" style="border-color:white"   class="fa fa-hand-o-left"     data-align="left"  ></a>
+   
+      <a data-role="button" style="border-color:white"  data-align="right" data-icon="refresh"></a>
+       </div>
+    </div>
+
+    <!-- application views will be rendered here -->
+     
+  </div>
+    <div data-role="layout" data-id="default">
+    <div data-role="header">
+      <div data-role="navbar">
+           <span data-role="view-title"></span>
+                   <a data-role="backbutton" style="border-color:white"   class="fa fa-hand-o-left"     data-align="left"  ></a>
+    
+       </div>
+    </div>
+
+    <!-- application views will be rendered here -->
+     
+  </div>
+        <div data-role="layout" data-id="default-2">
+    <div data-role="header">
+      <div data-role="navbar">
+           <span id="category-title" data-role="view-title">News</span>
+                   <a data-role="backbutton" style="border-color:white"   class="fa fa-hand-o-left"     data-align="left"  ></a>
+    
+       </div>
+    </div>
+
+    <!-- application views will be rendered here -->
+     
+  </div>
+      <div data-role="layout" data-id="read">
+    <div id="article-header" data-role="header">
+      <div data-role="navbar">
+           <span data-role="view-title">
+           <a data-align="left">
+              <img src="images/gazette.png"  style="height:32px"  />
+          </a>...
+               </span>
+            <a data-role="backbutton" style="border-color:white"   class="fa fa-hand-o-left"     data-align="right"  ></a>
+   
+                   <a  data-role="button" style="border-color:white"   data-icon="share"  href="#right-drawer" data-rel="drawer"   data-align="right"  ></a>
+             <a  data-role="button" style="border-color:white"   data-icon="drawer-button"  href="#appDrawer" data-rel="drawer"   data-align="right"  ></a>
+    
+       </div>
     </div>
 
     <!-- application views will be rendered here -->
     
   </div>
+    <div data-role="layout" data-id="login">
+   
 
+    </div>
   <!-- application drawer and contents -->
-  <div data-role="drawer" id="appDrawer" style="width: 270px" data-title="Navigation">
+  <div data-role="drawer" id="appDrawer" data-position="right"  data-swipe-to-open="false" style="width: 270px" data-title="Menu">
     <div data-role="header">
       <div data-role="navbar">
         <span data-role="view-title"></span>
       </div>
     </div>
     <ul data-role="listview">
-      <li>
-        <a href="views/home.html">Home</a>
+        <li data-role="list-divider" style="color:red">Gazette Mobile</li>
+      <li data-icon="home" class="fa">
+        <a href="#GazetteHome"> Home</a>
+      </li>
+      <li class="fa" data-icon="newpaper">
+        <a href="#NewsStand">My News Stand</a>
+      </li>
+      <li  >
+        <a href="#MyAccount"><i class="fa fa-gear fa-spin"></i> &nbsp;My Account</a>
+      </li>
+        <li data-role="list-divider" style="color:red" >My Articles</li>
+        <li data-icon="search">
+        <a href="#ArticleSearch">
+            Search
+            </a>
+        </li>
+          <li data-role="list-divider" style="color:red" >Categories</li>
+         <li>
+        <a onclick="View_Category(33,'NEWS')">News</a>
       </li>
       <li>
-        <a href="views/settings.html">Settings</a>
+        <a onclick="View_Category(14,'SPORTS')">Sports</a>
       </li>
       <li>
-        <a href="views/contacts.html">Contacts</a>
+        <a onclick="View_Category(10,'LIFESTYLE')">Lifestyle</a>
+      </li> 
+        <li>
+        <a onclick="View_Category(31,'MONEY')">Money</a>
+      </li>
+      <li>
+        <a onclick="View_Category(15,'TECH')">Tech</a>
+      </li>
+      <li>
+        <a onclick="View_Category(35,'GLOBAL')">World</a>
       </li>
     </ul>
+      
   </div>       
+<div data-role="drawer" id="right-drawer" style="width: 100px"  data-swipe-to-open="false" data-swipe-to-open-views='["ArticleDetails"]'   data-position="left" >
+    <header data-role="header">
+        <div data-role="navbar">
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div class="social-container">
+        <div class="button">
+            <img src="images/social/facebook.png"/>
+        </div>
+        <div class="button">
+            <img src="images/social/flickr.png"/>
+        </div>
+        <div class="button">
+            <img src="images/social/instagram.png"/>
+        </div>
+        <div class="button">
+            <img src="images/social/twitter.png"/>
+        </div>
+    </div>
+</div>
+    <div id="Login" data-role="view" data-layout="login">
+        <div style="margin:5% auto; width:80%">
+            
+     
+             <img src="images/gazette.png" style="width:100%; "/>
+               </div>
+        <div id="lock">
+           <span id="lock-title">Secure Lock</span>
+            <img src="images/lock.png"/>
+          
+        </div>
+        <form>
+            
+      
+              <ul data-role="listview" data-type="group" data-style="inset">
+       
+            <li class="login">
+            <ul style="border:1px solid white">
+                <li><label> <input type="Email" id="txtLogin" placeholder="Email Address"/>Email: </label></li>
+                <li><label><input type="password" id="txtPass" maxlength="5" placeholder="5 Digit PIN"/>PIN CODE: </label></li>
+               
+                
+                </ul>
+            </li>
+                  <li>
+                  <ul>
+                      <li>
+                      <label>
+                <input type="checkbox"   id="chkRem" />
+               Remember me?
+            </label>
+                      </li>
+                      </ul>
+                  </li>
+             
+                  <li>
+                 
+                        <a data-role="button"  class="loginbutton"  onclick="Login()" id="btnlogin">Login</a> &nbsp;
+               
+                  <a data-role="button" id="btnregister" href="#Registration" class="loginbutton">Register</a>
+             
+                  </li>
+                  <li style="text-align:center">
+                  <br><br>
+                 
+                    
+                      <p>
+                         Forgot your password? <a style="color:blue" href="#PasswordRecovery">Click Here</a> to recover it
+                      </p>
+                  </li>
+              
+        </ul>
+            
+         </form>
+      
+    </div>
+    <div id="PasswordRecovery" data-role="view" data-transition="slide:right" data-title="Forgot PIN CODE?" data-layout="login">
+        <div style="margin:5% auto; width:80%">
+            
+     
+             <img src="images/gazette.png" style="width:100%; "/>
+               </div>
+         <div class="profile">
+             <h2>
+                 Forgot your <span>PIN CODE?</span>
+             </h2>
+        </div>
+        <br>
+        <p>
+            In order to gain access to your paper, Enter your email address in the space provided to be sent your PIN.
+        </p>
+        <form>
+            
+      
+              <ul data-role="listview" data-type="group" data-style="inset">
+       
+            <li class="login">
+            <ul style="border:1px solid white">
+                <li><label> <input type="Email" id="txtLogin" placeholder="Email Address"/>Email: </label></li>
+               
+                
+                </ul>
+            </li>
+              
+             
+                  <li>
+                 
+                        <a data-role="button"  class="loginbutton"   id="btnlogin">Send</a> &nbsp;
+               
+                  <a data-role="backbutton" id="btnregister" class="loginbutton">Cancel</a>
+             
+                  </li>
+                  
+              
+        </ul>
+            
+         </form>
+      
+    </div>
+    <div id="Registration" data-role="view" data-transition="slide:left" data-layout="login">
+        <div style="margin:5% auto; width:80%">
+            
+     
+             <img src="images/gazette.png" style="width:100%; "/>
+               </div>
+     
+        <form>
+            
+      
+              <ul data-role="listview" data-type="group" data-style="inset">
+       
+       
+                  <li class="registration">
+               <ul>
+                               <li>Email: <input type="Email" id="regEmail" placeholder="Your Email"/> </li>
+                    <li>Display Name <input type="text" id="regDisplayName" placeholder="Display Name"/> </li>
+                <li>PIN CODE: <input type="password" id="regPIN" maxlength="5" placeholder="Enter PIN"/> </li>
+                <li>CONFIRM PIN: <input type="password" id="regCPIN" maxlength="5" placeholder="Re-enter PIN"/> </li>
+                
+                      </ul>
+                  
+                  </li>
+                  <li>
+                        <a data-role="button" id="btnRegister" onclick="Subscribe()" class="loginbutton">Register</a>
+                                <a data-role="backbutton"  class="loginbutton"  id="btncancel">Cancel</a> &nbsp;
+                       
+               
+                
+             
+                  </li>
+                  
+        </ul>
+            
+         </form>
+      
+    </div>
+    <div id="Subscriptions" data-role="view"   data-title="Subscribe" data-layout="default">
+           <div style="margin:5% auto; width:80%"> 
+             <img src="images/gazette.png" style="width:100%; "/>
+               </div>
+        <ul data-role="listview" data-style="inset" >
+            <li class="subscription-item"><a onclick="selectSubscription('bronze')" data-role="button"><img src="images/bronze.png"/></a></li>
+             <li class="subscription-item"><a  onclick="selectSubscription('sliver')"  data-role="button"><img src="images/silver.png"/></a></li>
+             <li class="subscription-item"><a  onclick="selectSubscription('gold')"  data-role="button"><img src="images/gold.png"/></a></li>
+             <li class="subscription-item"><a  onclick="selectSubscription('platinum')"  data-role="button"><img src="images/platinum.png"/></a></li>
+        </ul>
+    </div>
+    <div id="GazetteHome" data-role="view"    data-layout="main">
+       
+        <ul data-role="listview" data-type="group" id="home-list" data-style="inset">
+            <li data-role="list-divider">
+      Top News
+            </li>
+            <li>
+            <ul id="home-slider">
+                <li>
+ <div id="owl-news" class="owl-carousel">
+    
+   
+  
+</div>
+                </li>
+                </ul>
+            </li>
+             <li data-role="list-divider">
+            Sports
+            </li>
+            <li>
+            <ul>
+                <li>
+ <div id="owl-sports" class="owl-carousel">
+ 
+ 
+</div>
+                </li>
+                </ul>
+            </li>
+                  <li data-role="list-divider">
+            LifeStyle
+            </li>
+            <li>
+            <ul>
+                <li>
+ <div id="owl-lifestyle" class="owl-carousel">
+ 
+  
+  
+</div>
+                </li>
+                </ul></li>
+            
+                 <li data-role="list-divider">
+            Tech
+            </li>
+            <li>
+            <ul>
+                <li>
+ <div id="owl-tech" class="owl-carousel">
+ 
+  
+  
+</div>
+                </li>
+                </ul></li>
+            
+                 <li data-role="list-divider">  Money </li>
+                  <li>
+                     <ul>
+                        <li>
+                             <div id="owl-money" class="owl-carousel">
+  
+                              </div>
+                </li>
+                </ul></li>
+                 <li data-role="list-divider">
+            Worled News
+            </li>
+            <li>
+            <ul>
+                <li>
+ <div id="owl-world" class="owl-carousel">
+ 
+  
+  
+</div>
+                </li>
+                </ul></li>
+        </ul>
+
+
+ 
+   
+    </div>
+    <div id="MyAccount" data-role="view" data-layout="account">
+        <div class="profile">
+            <div id="status-color" class="status_green">
+                
+            </div>
+            <h2>
+                Status
+                <span id="status-value" class="paper_bottom">
+                Active
+                </span>
+            </h2>
+        </div>
+        <br><br><br>
+ <ul data-role="listview" data-style="inset" data-type="group">
+     <li data-role="list-divider" style="background-color:grey;color:white">
+     <h3>
+         Latest
+         </h3>
+     </li>
+     <li>
+     <ul>
+              <li><label class="display-left">Type:</label><span style="color:brown;font-weight:bold" class="display-right" id="lblSubType"></span></li>
+               <li><label class="display-left">Amount:</label><span  style="color:green;font-weight:bold" class="display-right" id="lblSubAmount"></span></li>
+                <li><label class="display-left">Starts On:</label><span class="display-right" id="lblSubStart"></span></li>
+              <li><label class="display-left">Ends On:</label><span style="color:red" class="display-right" id="lblSubEnd"></span></li>
+             <li><label class="display-left">Remaining:</label><span class="display-right" id="lblSubDays"></span></li>
+              
+         <li>
+           <a data-rel="actionsheet" style="background-color:green;color:white"  data-role="button" onclick="openSheet()">EXTEND SUBSCRIPTION</a> 
+     </li>
+         </ul>
+     </li>
+      <li data-role="list-divider" style="background-color:grey;color:white">
+     <h3>
+         Previous Subsciptions
+         </h3>
+     </li>
+     <ul id="other-subscriptions">
+         
+     </ul>
+        </ul>
+     
+        
+        
+        
+          <ul data-role="actionsheet" id="inboxActions"   data-popup='{"direction": "left"}'>
+        <li class="km-actionsheet-title">Payment Options</li>
+        <li><a data-rel="modalview"   data-action="reply">Pay with Bank Card</a></li>
+        <li><a href="#"  >Pay with vMoney (Coming soon)</a></li>
+       
+    </ul>
+    </div>
+  <div id="ArticleDetails" data-transition="zoom" data-role="view"   data-layout="read">
+ <div  >
+     <ul data-role="listview" data-style="inset" data-type="group">
+         <li data-role="list-divider" style="color:white;background-color:red"> <h2 id="article-title">
+         
+     </h2></li>
+         <li>
+         
+         <ul class="article">
+             <li>
+              <div style="width:100%;margin: 0 auto">
+         <img src="#" id="article-image" style="width:90%"/>
+                  <p id="art-date" class="item-info">
+                      
+                  </p>
+     </div>
+             </li>
+             <li>
+                   <div data-role="scroller" style="height:70vh" id="story-scroller" >
+         <div id="article-story">
+             
+         </div>
+     </div>
+             </li>
+             </ul>
+           
+         </li>
+         <li data-role="list-divider" style="color:white;background-color:red">  <h2>
+             More from this paper
+             </h2></li>
+         <li>
+             <div id="more-scroller" style="height:180px">
+                 
+            
+         <ul id="more-articles-list" >
+             
+             </ul>
+                  </div>
+         </li>
+     </ul>
+    
+    
+     
+   
+     
+      </div>     
+ 
+       <footer data-role="footer" id="article-footer" >
+        <div data-role="tabstrip">
+         <span id="article-date"></span>
+            
+             
+         </p>
+         </div>
+          </footer>
+		
+    </div>
+    <div id="Stand" data-role="view" data-layout="main">
+        <div class="profile">
+            <div   class="status_green">
+            </div>
+            <h2>
+                News from <span id="paper-id">2015/01/01</span>
+            </h2>
+        </div>
+        <br><br><br>
+    <ul data-role="listview" data-type="group" data-style="inset">
+        <li data-role="list-divider">News</li>
+        <li><ul id="my-news"> </ul></li>
+             <li data-role="list-divider">Sports</li>
+        <li><ul id="my-sports"> </ul></li>
+             <li data-role="list-divider">LifeStyle</li>
+        <li><ul id="my-lifestyle"> </ul></li>
+             <li data-role="list-divider">Technology</li>
+        <li><ul id="my-tech"> </ul></li>
+             <li data-role="list-divider">Money</li>
+        <li><ul id="my-money"> </ul></li>
+             <li data-role="list-divider">World</li>
+        <li><ul id="my-world"> </ul></li>
+        </ul>
+    </div>
+    <div id="NewsStand" data-role="view" data-layout="shelf">
+   
+   <div data-role="scrollview" id="news-stand" data-page="0">
+    
+     </div>
+        
+    </div>
+    <div id="CategoryArticles" data-role="view" data-layout="default-2">
+        <ul id="category-articles" data-role="listview">
+            
+        </ul>
+        
+    </div>
+    <div id="ArticleSearch" data-role="view" data-title="My Repository" data-init="loadAllArticles" data-layout="default">
+        <ul id="all-articles" data-role="listview">
+            
+        </ul>
+        
+    </div>
+   <div id="PaymentConfirmation" data-layout="default" data-before-show="loadTx" data-role="view">
+       <ul data-role="listview" data-style="inset" data-type="group">
+           <li data-role="list-divider">
+           Confirm subscripiton before payment
+           </li>
+           <li>
+           <ul>
+               <li data-role="list-divider" style="color:white;background-color:red">Card Details</li>
+               <li><label class="display-left">Card Holder:</label><span class="display-right" id="lblCardHolder"></span></li>
+               <li><label class="display-left">Card #:</label><span class="display-right" id="lblCardNumber"></span></li>
+               <li><label class="display-left">CVC #:</label><span class="display-right" id="lblCardCVC"></span></li>
+               <li><label class="display-left">Card Expires:</label><span class="display-right" id="lblCardExp"></span></li>
+               
+               </ul>
+               <ul>
+                    <li data-role="list-divider" style="color:white;background-color:red">Subscription Details</li>
+                     <li><label class="display-left">Type:</label><span class="display-right" id="lblTxType"></span></li>
+               <li><label class="display-left">Amount:</label><span class="display-right" id="lblTxAmount"></span></li>
+               <li><label class="display-left">Contains Days:</label><span class="display-right" id="lblTxDays"></span></li>
+               <li><label class="display-left">Starts On:</label><span class="display-right" id="lblTxStart"></span></li>
+              <li><label class="display-left">Ends On:</label><span class="display-right" id="lblTxEnd"></span></li>
+             
+               </ul>
+           </li>
+           <li>
+           <ul>
+               <li><a data-role="button"  onclick="confirmPayment()">Continue<a data-role="detail-button" data-icon="action"></a></a></li>
+               
+               </ul>
+           </li>
+       </ul>
+    </div>
+ <div id="AddCard" data-role="view" data-title="Payments" data-layout="default">
+       
+        <br />
+     <br>
+        <h1  id="cardInr">Enter Card Details</h1>
+        <br />
+     <br><br>
+          <form class="searchform">
+	<input class="searchfield" type="text" id="txtcardno" tabindex="0"   maxlength="16"  placeholder="Card Holder Name" />
+	
+              <div class="searchfield" id="txtexpdate">
+          <input class="searchfield"  type="month" id="txtmonth" tabindex="2"    />
+                  </div>
+	
+        <input class="searchbutton" type="button" onclick="cardEntry()" value="Go" />
+            
+</form>
+          <div class="CardLoad">
+      
+              </div>
+    </div>
+    <div id="Subscriptions" data-role="view"  data-layout="default">
+        
+    </div>
+    <script type="text/x-kendo-template" id="listviewHeadersTemplate">
+    <img class="item-photo" src="${image}" />
+    <h3 class="item-title">${title}</h3>
+    <p class="item-info">${date}</p>
+    <a data-role="button" onclick="setArticle_details(${id})" class="details-link">View</a>
+</script>
+    <script type="text/x-kendo-template" id="SubscriptionTemplate">
+    
+    <h2 class="item-title">${type}</h2>
+    <p class="item-info"><b>Paid:</b> ${transactiondate}</p><br><br>
+    <p class="item-info"><b>Valid Until:</b> ${subscriptionenddate}</p>
+    <a data-role="button" data-click="showSubscription" class="details-link">View</a>
+</script>
+   <script>
+       function closeModalViewLogin() {
+        $("#modalview-card-selection").kendoMobileModalView("close");
+    }
+       
+    </script>
+            <script type="text/javascript">	
+		 
+            function setArticles(){
+           $("#owl-articles").owlCarousel({autoPlay:true,responsive:true});
+		 
+            }
+                function readMoreStory(){
+                    $('#article-content').css("visibility","visible");
+                            $('#article-content').css("opacity","1");
+                            $('#article-content').css("transition-delay","0s");
+                    $('#article-content').slideDown("slow");
+                    
+                    $('#ReadMore').hide("slow");
+                }
+              
+                function destroyArticle(){
+                var view = new kendo.View("Hi!", { tagName: "span" });
+                view.render($("#ArticleDetails"));
+                view.destroy();
+                }
+		</script>
+                <script src="scripts/jquery.pagepiling.min.js"></script>
+   
 
 </body>
 </html>
