@@ -5,7 +5,7 @@
   "AppIdentifier": "com.telerik.GazetteApp",
   "DisplayName": "Gazette App",
   "Author": "",
-  "Description": "",
+  "Description": "Gazette App",
   "BundleVersion": "1.0",
   "AndroidVersionCode": "1",
   "iOSDeviceFamily": [
@@ -34,5 +34,26 @@
     "ID_RESOLUTION_WVGA",
     "ID_RESOLUTION_WXGA",
     "ID_RESOLUTION_HD720P"
+  ],
+  "WP8WindowsPublisherName": "CN=Telerik",
+  "WP8PackageIdentityName": "1234Telerik.com.telerik.GazetteApp",
+  "CorePlugins": [
+    "com.phonegap.plugins.sqlite",
+    "com.pushwoosh.plugins.pushwoosh@3.2.1",
+    "com.rjfun.cordova.plugin.admob@2.1.7",
+    "com.telerik.plugin.telerikanalytics@3.3.1",
+    "com.telerik.plugins.nativepagetransitions@0.2.12",
+    "nl.x-services.plugins.socialsharing@4.3.13",
+    "nl.x-services.plugins.toast@2.0.4",
+    "org.apache.cordova.console",
+    "org.apache.cordova.device",
+    "org.apache.cordova.device-motion",
+    "org.apache.cordova.device-orientation",
+    "org.apache.cordova.dialogs",
+    "org.apache.cordova.globalization",
+    "org.apache.cordova.inappbrowser",
+    "org.apache.cordova.media",
+    "org.apache.cordova.network-information",
+    "org.apache.cordova.splashscreen"
   ]
 }

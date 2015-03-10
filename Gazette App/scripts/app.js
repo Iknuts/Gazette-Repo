@@ -22,7 +22,11 @@ var user = null;
 
     // this function is called by Cordova when the application is loaded by the device
     document.addEventListener('deviceready', function () {  
-     
+        window.setInterval(function(){
+                var d = new Date();
+        $('#paper-date').text(d);
+        },1000);
+ 
             if (navigator.connection.type === Connection.NONE||navigator.connection.type === Connection.UNKNOWN) {
                  localStorage.setItem("mode","offline");
                 $('#lock-title').text('Device Secure');
@@ -55,9 +59,11 @@ var user = null;
         // the application needs to know which view to load first
       // transition: 'zoom'
       });
+    
+        
          el = new Everlive(everlive_API_KEY);
                 try{
-                      db = openDatabase(dbName, version, dbDisplayName, dbSize, function(database) 
+                        db = window.sqlitePlugin.openDatabase(dbName, version, dbDisplayName, dbSize, function(database) 
                            {
                           
                            });
@@ -74,8 +80,9 @@ var user = null;
                 }
 			)             
                            });
-                     
-                           db.transaction(function(tx) {  tx.executeSql("CREATE TABLE IF NOT EXISTS Articles (id INTEGER UNIQUE, title TEXT, url TEXT,content TEXT,image TEXT, newspaper TEXT,date TEXT)");});
+                            db.transaction(function(tx) {  tx.executeSql("CREATE TABLE IF NOT EXISTS Subscriptions (id TEXT UNIQUE, accountemail TEXT, subscriptionenddate DATETIME,transactiondate DATETIME,amountpaid INTEGER, referenceno TEXT,type TEXT)");});
+                         
+                           db.transaction(function(tx) {  tx.executeSql("CREATE TABLE IF NOT EXISTS Articles (id INTEGER UNIQUE, title TEXT, url TEXT,content TEXT,image TEXT, newspaper TEXT,date TEXT, category INTEGER)");});
                           db.transaction(function(tx) {tx.executeSql("CREATE TABLE IF NOT EXISTS Category (id INTEGER PRIMARY KEY, title TEXT, description TEXT,parent INTEGER)");});
                           db.transaction(function(tx) {  tx.executeSql("CREATE TABLE IF NOT EXISTS Article_Categories (articleid INTEGER , categoryId INTEGER, PRIMARY KEY(articleid, categoryid))");});
                             db.transaction(function(tx) {  tx.executeSql("CREATE TABLE IF NOT EXISTS User (id INTEGER PRIMARY KEY, email TEXT, displayname TEXT,username TEXT, pin INTEGER, subscription_startDate DATETIME, subscription_endDate DATETIME)");});
@@ -90,14 +97,40 @@ var user = null;
                                
             
       } 
-                    
+                    var t=localStorage.getItem("isRemembered");
+                    if(t!=null){
+    switch(t){
+        case 'true':
+           
+          
+                         $.when(updateStorage()).then(function(){
+                      
+                                       startHome_Page_Slideshow();
+                                             setupshelf();
+                                          
+                                     
+                               
+                             app.navigate("#GazetteHome");
+                                    
+                         });
+                 
+            break;
+        case 'false':
+           
+            break;
+        default:
+     
+            break;
+    }
+    }
 
                     
                   } catch(e){
                         alert(e);
                 }
     }, false);
-
+   
+    
 
 }());
  
@@ -144,28 +177,45 @@ el.Users.register(email,
     });
     
 }
-function SaveArticle_toDevice(id,title,url,content,image,date,paper){
+function SaveArticle_toDevice(id,title,url,content,image,date,paper,category){
     try{
-            if(db){
-                db.transaction(function(tx) {
-                     tx.executeSql(
-                "INSERT OR REPLACE INTO Articles (id,title,url,content,image,newspaper,date)  VALUES (?,?,?,?,?,?,?)",
-                [id,title,url,content,image,paper,date],
-                function(tx, res) {
-                    savePaper(paper,paper);
-                 },
-                function(tx, res) {
-                    alert('error: ' + res.message);
-                });
-                });
-            }
-        else{
-            alert("Db not open");
+       
+        
+      //if the date of the paper is valid for the subscription
+            var time = new Date();
+     var today = new Date(date);
+        var set = new Date();
+    
+        set.setDate(time.getDate() -7);
+       
+        if(today>set){
+
+                if(db){
+                    db.transaction(function(tx) {
+                         tx.executeSql(
+                    "INSERT OR REPLACE INTO Articles (id,title,url,content,image,newspaper,date,category)  VALUES (?,?,?,?,?,?,?,?)",
+                    [id,title,url,content,image,paper,date,category],
+                    function(tx, res) {
+                        savePaper(paper,paper);
+                        console.log("DB updated [" + title + "]");
+                     },
+                    function(tx, res) {
+                        alert('error: ' + res.message);
+                    });
+                    });
+ }
+            else{
+                alert("Db not open");
+                  }
         }
+        else{
+            console.log("Old record found");
+        }
+        
         }
         catch(e){
             alert(e);
-                  }
+         }
 } 
 function saveArticle_Category(articleid,categoryid){
     if(db){
@@ -174,16 +224,499 @@ function saveArticle_Category(articleid,categoryid){
         "INSERT OR REPLACE INTO Article_Categories (articleid,categoryid) VALUES (?,?)",
         [articleid, categoryid],
         function(tx, res) {
-            console.log("insertId: " + res.insertId + ", rows affected: " + res.rowsAffected);
-        },
+         },
         function(tx, res) {
             alert('error: ' + res.message);
         });
         });
     }
 }
+function saveSubscription_toDevice(id,email,enddate,txdate,amount,refno,type){
+       // (id TEXT UNIQUE, accountemail TEXT, subscriptionenddate DATETIME,transactiondate DATETIME,amountpaid INTEGER, referenceno TEXT)");});
+               if(db){
+        db.transaction(function(tx) {
+             tx.executeSql(
+        "INSERT OR REPLACE INTO Subscriptions (id,accountemail,subscriptionenddate,transactiondate,amountpaid,referenceno,type) VALUES (?,?,?,?,?,?,?)",
+        [id,email,enddate,txdate,amount,refno,type],
+        function(tx, res) {
+            console.log(" SUBSCRIPTIONS UPDATED!");
+         },
+        function(tx, res) {
+            alert('error: ' + res.message);
+        });
+        });
+    }            
+}
+function syncSubscriptions(){
+         app.pane.loader.show();
+            var username = localStorage.getItem("user_email"); 
+                var filter = new Everlive.Query();
+                filter.where().eq('AccountEmail', username);
+
+                var data = el.data('Subscription');
+                data.get(filter)
+                    .then(function(data){
+                  
+                    
+                      if(data.count>0){
+                         for(var i=0;i<data.count;i++){
+                             saveSubscription_toDevice(data.result[i].Id,data.result[i].AccountEmail,data.result[i].SubscriptionEndDate,data.result[i].TransactionDate,data.result[i].AmountPaid,data.result[i].ReferenceNo,data.result[i].SubscriptionType);
+                         }
+                          getSubscriptions();
+                          app.pane.loader.hide();
+                          //update subscription table
+                          
+                      }
+                    else{
+                        
+                           app.pane.loader.hide();
+                    }
+                    
+                    },
+                    function(error){
+                      app.pane.loader.hide();
+                        alert(JSON.stringify(error));
+                    });
+}
+function getSubscriptions(){
+    var user = localStorage.getItem("user_email");
+    var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * from Subscriptions WHERE accountemail=?', [user], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setSubscriptions(dataSource);
+}
+function setSubscriptions(data){
+     $("#other-subscriptions").kendoMobileListView({
+                dataSource: data,
+                template:$("#SubscriptionTemplate").html(),
+                 click: function(e){
+                     showSubscription(e);
+                 }
+            });
+}
+function logout(){
+    localStorage.setItem("isRemembered",'false');
+    app.navigate("#Login");
+}
+function showSubscription(e){
+   
+    if(db){
+          db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * from Subscriptions WHERE id =?', [e.dataItem.id], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+                  var date1 = new Date();
+                            var date2 = new Date(data[i].subscriptionenddate);
+                            var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+                          if(diffDays<10){
+                                $("#lblSubDays").css("color","red");
+                              alert("You have " + diffDays + " left on your subscription");
+                          }
+                          if(diffDays>=0){
+                         $("#lblSubDays").text(diffDays + " Days Left")
+                         $('#status-color').attr("class","status_green");
+                             }
+                          else{
+                                 $("#lblSubDays").text("None");
+                                $('#status-color').attr("class","status_red");
+                          }
+                          $('#lblSubType').text(JSON.stringify(data[i].type).toUpperCase());
+                             $('#lblSubAmount').text("P"+ data[i].amountpaid + ".00");
+                             $('#lblSubStart').text(data[i].transactiondate);
+                             $('#lblSubEnd').text(data.result[data.count-1].subscriptionenddate);
+             }
+            
+             // Set into elements
+          });
+        });
+    }
+}
+function showMainSubscription(){
+    var id= localStorage.getItem("subscription-id");
+    if(db){
+          db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * from Subscriptions WHERE id =?', [id], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+                  var date1 = new Date();
+                            var date2 = new Date(data[i].subscriptionenddate);
+                            var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+                          if(diffDays<10){
+                                $("#lblSubDays").css("color","red");
+                              alert("You have " + diffDays + " left on your subscription");
+                          }
+                          if(diffDays>=0){
+                         $("#lblSubDays").text(diffDays + " Days Left")
+                         $('#status-color').attr("class","status_green");
+                             }
+                          else{
+                                 $("#lblSubDays").text("None");
+                                $('#status-color').attr("class","status_red");
+                          }
+                          $('#lblSubType').text(JSON.stringify(data[i].type).toUpperCase());
+                             $('#lblSubAmount').text("P"+ data[i].amountpaid + ".00");
+                             $('#lblSubStart').text(data[i].transactiondate);
+                             $('#lblSubEnd').text(data.result[data.count-1].subscriptionenddate);
+             }
+            
+             // Set into elements
+          });
+        });
+    }
+}
+function View_Paper(paperid){
+    $('#paper-id').text(paperid);
+    init_MyNews(paperid);
+      init_Sports(paperid);
+      init_Money(paperid);
+    init_Tech(paperid);
+   init_Lifestyle(paperid);
+    init_World(paperid);
+    app.navigate("#Stand");
+}
+function View_Category(categoryId,title){
+      $("#category-title").text(title);
+    var dataSource = new kendo.data.DataSource({
+   pageSize: 10,
+    serverFiltering: true,
+    group:"newspaper",
+   serverPaging: true,
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * from Articles where category =?', [categoryId], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    Set_Articles(dataSource);
+  
+}
+function Set_Articles(data){
+    
+      $("#category-articles").kendoMobileListView({
+                dataSource: data,
+                  dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#category-articles").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                     
+                 
+                template:$("#listviewHeadersTemplate").html(),
+                  headerTemplate: "<p class='listD'>Published: ${value}</p>"
+            }); 
+    app.navigate("#CategoryArticles","fade");
+}
+function loadAllArticles(){
+   var dataSource = new kendo.data.DataSource({
+    
+       transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * from Articles', [], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   },
+         virtualViewSize: 100,
+         schema: {
+                model: {
+                    fields: {
+                        title: { type: "string" },
+                        content: { type: "string" },
+                        id: { type: "number" },
+                        newspaper: { type: "string" },
+                         date: { type: "date" },
+                         image: { type: "string" },
+                         url: { type: "string" },
+                         category: { type: "number" },
+                        
+                    }
+                }
+            },
+       group:"newspaper"
+            });
+        viewSearch(dataSource);
+}
+function viewSearch(data){
+    $("#all-articles").kendoMobileListView({
+                dataSource: data,
+                filterable: {
+                field: "title",
+                operator: "contains"
+                }, 
+                template:$("#listviewHeadersTemplate").html(),
+                headerTemplate: "<p class='listD'>Published: ${value}</p>"
+            });
+    
+}
+function init_MyNews(paperid){
+      var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=33', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setNews(dataSource);
+   
+    
+} 
+function init_Sports(paperid){
+       var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=14', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setSports(dataSource);
+}
+function init_Lifestyle(paperid){
+      var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=10', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setLifestyle(dataSource);
+}
+function init_Tech(paperid){
+   var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=15', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setTech(dataSource);
+}
+function init_Money(paperid){
+     var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=31', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setMoney(dataSource);
+}
+function init_World(paperid){
+     var dataSource = new kendo.data.DataSource({
+   transport: {
+      read: function(options) {
+
+        db.transaction(function(tx) {
+
+          tx.executeSql('SELECT * FROM Articles WHERE newspaper=? AND category=35', [paperid], function(tx, result) {
+
+             var data = [];
+             // copy the rows to a regular array
+             for (var i = 0; i < result.rows.length; i++) {
+                data[i] = result.rows.item(i);
+             }
+
+             options.success(data); // return the data back to the data source
+          });
+        });
+      }
+   }
+});
+    setWorld(dataSource);
+}
+function setNews(data){
+      $("#my-news").kendoMobileListView({
+                dataSource: data,
+                  dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-news").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+function setSports(data){
+      $("#my-sports").kendoMobileListView({
+                dataSource: data,
+                dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-sports").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+function setLifestyle(data){
+      $("#my-lifestyle").kendoMobileListView({
+                dataSource: data,
+                 dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-lifestyle").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+function setTech(data){
+      $("#my-tech").kendoMobileListView({
+                dataSource: data,
+                dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-tech").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+function setMoney(data){
+      $("#my-money").kendoMobileListView({
+                dataSource: data,
+                dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-money").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+function setWorld(data){
+      $("#my-world").kendoMobileListView({
+                dataSource: data,
+            dataBound: function(e) {
+                if(this.dataSource.data().length == 0){
+                    //custom logic
+                    $("#my-world").append("<h1 class='empty-template'>Nothing to display</h1>");
+                }
+            },
+                template:$("#listviewHeadersTemplate").html()
+            });
+}
+
 
  function Login( ){
+   
+     
      app.pane.loader.show();
      var username=$('#txtLogin').val();
      var password=$('#txtPass').val();
@@ -200,7 +733,7 @@ function saveArticle_Category(articleid,categoryid){
                                                              if (results.rows.length>0){
                                                                  //correct login
                                                                  user = JSON.stringify(results.rows[0]);
-                                                                 alert(user);
+                                                                
                                                                  app.navigate("#GazetteHome","overlay");
                                                                  
                                                              }
@@ -218,6 +751,7 @@ function saveArticle_Category(articleid,categoryid){
 
 
                         }
+                  app.pane.loader.hide();
              break;
          case "online":
              
@@ -226,10 +760,17 @@ function saveArticle_Category(articleid,categoryid){
             function (data) {
               localStorage.setItem("access-token",data.result.access_token);
               localStorage.setItem("user_email",username);
-              
+                 var lfckv = document.getElementById("chkRem").checked;
+                if(lfckv==true){
+                      localStorage.setItem("isRemembered",'true');
+                    
+                }else{
+                    localStorage.setItem("isRemembered",'false');
+                }
+              syncSubscriptions();
                 //check account details- 
                 //get account subscription
-                 
+                var f= new Date();
                  
                 var filter = new Everlive.Query();
                 filter.where().eq('AccountEmail', username);
@@ -237,22 +778,73 @@ function saveArticle_Category(articleid,categoryid){
                 var data = el.data('Subscription');
                 data.get(filter)
                     .then(function(data){
-                     app.pane.loader.hide();
+                  
+                    
                       if(data.count>0){
                             var td = new Date();
-                            if(td>data.result.SubscriptionEndDate){
+                          localStorage.setItem("subscription-valid-till",JSON.stringify(data.result[data.count-1].SubscriptionEndDate));
+                            //Set subscription details for 'my account
+                          localStorage.setItem("subscription-id",data.result[data.count-1].Id);
+                          var date1 = new Date();
+                            var date2 = new Date(data.result[data.count-1].SubscriptionEndDate);
+                            var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+                          if(diffDays<10){
+                                $("#lblSubDays").css("color","red");
+                              alert("You have " + diffDays + " left on your subscription");
+                          }
+                          if(diffDays>=0){
+                         $("#lblSubDays").text(diffDays + " Days Left")
+                             }
+                          else{
+                                 $("#lblSubDays").text("None");
+                          }
+                          $('#lblSubType').text(JSON.stringify(data.result[data.count-1].SubscriptionType).toUpperCase());
+                             $('#lblSubAmount').text("P"+ data.result[data.count-1].AmountPaid + ".00");
+                             $('#lblSubStart').text(data.result[data.count-1].TransactionDate);
+                             $('#lblSubEnd').text(data.result[data.count-1].SubscriptionEndDate);
+                         
+                          
+                          //update subscription table
+                          
+                          
+                            if(td>data.result[data.count-1].SubscriptionEndDate){
                               alert("Subscription Expired");
-
- }
+                               app.pane.loader.hide();
+                                app.navigate('#Subscriptions');
+                                 }
                             else{
-                                alert("Valid subscription");
-                                app.navigate("#GazetteHome");
-}
+                               
+                             $.when(updateStorage()).then(function(){
+                            
+                                
+                                  
+                                             setupshelf();
+                                          //set up bookshelf
+                                     
+                               
+                               
+                             });
+                                   $.when(startHome_Page_Slideshow()).then(function(){
+                            
+                                
+                                 //set up home screen
+                                       
+                                    
+                                          //set up bookshelf
+                                     
+                                  app.pane.loader.hide();
+                                   app.navigate('#GazetteHome');
+                               
+                             });
+                                  
+                              
+                                }
                       }
                     else{
                         alert("There are no subscriptions associated with this account.... if you want to continue using Gazette Mobile.. please subscribe");
                         app.navigate("#Subscriptions","fade");
-                        
+                           app.pane.loader.hide();
                     }
                     
                     },
@@ -268,17 +860,23 @@ function saveArticle_Category(articleid,categoryid){
             },
             function(error){
                 alert(JSON.stringify(error));
+                 app.pane.loader.hide();
+                $('#txtLogin').val('');
+                $('#txtPass').val('');
             });
          
              break;
      }
      
-      app.pane.loader.hide();    
-        
+      
+       $('#txtLogin').val('');
+         $('#txtPass').val('');
          
      
     
  }
+
+
 function savePaper(paperid,title){
     if(db){
         db.transaction(function(tx) {
@@ -302,8 +900,7 @@ function saveCategory(id,title,description,parent){
         "INSERT OR REPLACE INTO Category (id,title,description,parent) VALUES (?,?,?,?)",
         [id,title,description,parent],
         function(tx, res) {
-            console.log("insertId: " + res.insertId + ", rows affected: " + res.rowsAffected);
-        },
+         },
         function(tx, res) {
             alert('error: ' + res.message);
         });
@@ -316,20 +913,14 @@ function startHome_Page_Slideshow(){
         var today = new Date();
         today = (today.setDate()-7);
   
-        
+        var content="";
              db.transaction(function(tx) {
                                                  //for the news
-                                                       tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 33', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                          var content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-7 days')", [p.articleid], 
+                                                                             tx.executeSql("SELECT * FROM Articles WHERE category = 33 AND date >= date('now','-7 days') ORDER BY date DESC LIMIT 5", [], 
                                                           
                                                                               function(tx,result1){
                                                                                 var articles =[];
-                                                                                
+                                                                                 content="";
                                                                                        $('#owl-news').css("opacity",0);
                                                                                 for(var i=0;i<result1.rows.length;i++){
                                                                                 articles[i]=result1.rows.item(i);
@@ -358,30 +949,14 @@ function startHome_Page_Slideshow(){
                                                                               function(tx){
                                                                                alert("error no articles found");
                                                                            });
-                                                                    
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
                                                   
                                                          //for the sports
-                                                               tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 14', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                         var  content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-7 days')", [p.articleid], 
+                                                        tx.executeSql("SELECT * FROM Articles WHERE category = 14 AND date >= date('now','-7 days') ORDER BY date DESC LIMIT 5", [], 
                                                           
                                                                               function(tx,result1){
                                                                                 var articles =[];
                                                                                   $('#owl-sports').css("opacity",0);
-                                                                                     
+                                                                                      content="";
                                                                                 for(var i=0;i<result1.rows.length;i++){
                                                                                 articles[i]=result1.rows.item(i);
                                                                                      content+="<div class='home_article' onclick='setArticle_details("+ articles[i].id+ ")' >" +
@@ -409,29 +984,13 @@ function startHome_Page_Slideshow(){
                                                                               function(tx){
                                                                                alert("error no articles found");
                                                                            });
-                                                                    
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
                                                      
                                                      //for lifestyle
-                                                           tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 10', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                          var content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-7 days')", [p.articleid], 
-                                                          
+                                                                      tx.executeSql("SELECT * FROM Articles WHERE category = 10 AND date >= date('now','-7 days') ORDER BY date DESC LIMIT 5", [], 
+                                                        
                                                                               function(tx,result1){
                                                                                 var articles =[];
-                                                                                
+                                                                                 content="";
                                                                                       $('#owl-lifestyle').css("opacity",0); 
                                                                                 for(var i=0;i<result1.rows.length;i++){
                                                                                 articles[i]=result1.rows.item(i);
@@ -461,27 +1020,12 @@ function startHome_Page_Slideshow(){
                                                                               function(tx){
                                                                                alert("error no articles found");
                                                                            });
-                                                                    
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
                  
                                                      //for the tech
-                                                           tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 15', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                         var  content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-14 days')", [p.articleid], 
-                                                          
+                                                         tx.executeSql("SELECT * FROM Articles WHERE category = 15 ORDER BY date DESC LIMIT 5", [], 
+                                                        
                                                                               function(tx,result1){
+                                                              content="";
                                                                                 var articles =[];
                                                                                   $('#owl-tech').css("opacity",0);
                                                                                      
@@ -515,28 +1059,13 @@ function startHome_Page_Slideshow(){
                                                                                  
                                                                            });
                                                                     
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
                  
                                                      //for the money
-                                                             tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 31', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                         var  content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-7 days')", [p.articleid], 
-                                                          
+                                                            tx.executeSql("SELECT * FROM Articles WHERE category = 31 AND date >= date('now','-7 days') ORDER BY date DESC LIMIT 5", [], 
+                                                        
                                                                               function(tx,result1){
                                                                                 var articles =[];
-                                                                                
+                                                                                content="";
                                                                                        $('#owl-money').css("opacity",0);
                                                                                 for(var i=0;i<result1.rows.length;i++){
                                                                                 articles[i]=result1.rows.item(i);
@@ -565,33 +1094,17 @@ function startHome_Page_Slideshow(){
                                                                               function(tx){
                                                                                alert("error no articles found");
                                                                            });
-                                                                    
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
                  
                                                      // for the world
-                                                              tx.executeSql('SELECT * FROM Article_Categories WHERE categoryId = 35', [], 
-                                                          //success function
-                                                          function(tx,result){
-                                                        var   content="";
-                                                                for(var i=0;i<result.rows.length;i++){
-                                                                    var p = result.rows.item(i);
-                                                                            tx.executeSql("SELECT * FROM Articles WHERE id = ? AND date >= date('now','-14 days')", [p.articleid], 
-                                                          
+                                                            tx.executeSql("SELECT * FROM Articles WHERE category = 35 ORDER BY date DESC LIMIT 5", [], 
+                                                        
                                                                               function(tx,result1){
                                                                                 var articles =[];
-                                                                                
+                                                                                 content="";
                                                                                       $('#owl-world').css("opacity",0); 
                                                                                 for(var i=0;i<result1.rows.length;i++){
                                                                                 articles[i]=result1.rows.item(i);
-                                                                                     content+="<div class='home_article' onclick='setArticle_details("+ articles[i].id+ ")' >" +
+                                                                                    content+="<div class='home_article' onclick='setArticle_details("+ articles[i].id+ ")' >" +
                                                                                     "<article class='caption'>" +
                                                                                      "<img class='caption__media' src=" + articles[i].image + " />" +
                                                                                      "<div class='caption__overlay'>"+
@@ -616,16 +1129,6 @@ function startHome_Page_Slideshow(){
                                                                               function(tx){
                                                                                alert("error no articles found");
                                                                            });
-                                                                    
-                                                                }
-                                                       
-                                                           
-                                                          
-                                                           
-                                                       },
-                                                          function(tx){
-                                                           alert("error");
-                                                       });
              
              
              });
@@ -635,6 +1138,45 @@ function startHome_Page_Slideshow(){
     }
   
 }
+function setupshelf(){
+    
+    if(db){
+          db.transaction(function(tx) {
+                                                 //for the news
+                                                       tx.executeSql('SELECT * FROM MyPapers', [], 
+                                                          //success function
+                                                          function(tx,result){
+                                                          var content="";
+                                                                for(var i=0;i<result.rows.length;i++){
+                                                                    var p = result.rows.item(i);
+                                                                  var item=  JSON.stringify( p.title);
+                                                                       content+="<div data-role='page'>" +
+                                                                           "<ul data-role='listview' data-style='inset'>"+
+                                                                           "<li><img src='images/gazette.png' style='width:100%' /></li>"+  
+                                                                            "<li class='paper_bottom'><a onclick='View_Paper("+item+ ")' data-role='button'><img src='images/Paperbg.jpg' /><p>" + p.title + "</p></a></li>"+
+                                                                           "</ul>"+
+                                                                           "</div>";
+                                                                }
+                                                       
+                                                          $('#news-stand').html('');
+                                                           $('#news-stand').html(content);
+                                                           
+                                                       },
+                                                          function(tx){
+                                                           alert("error");
+                                                       });
+                                                  
+                                                        
+                  
+                 
+                                                   
+             
+             
+             });
+    }
+    
+}
+
  function onOpen(e) {
         this.element.find(".km-actionsheet-title").text(e.target.next().text());
      
@@ -660,7 +1202,7 @@ $(document).ready(function(){
  
     
   $("#account-bar").kendoPanelBar();
-    $("#recurring-switch").kendoMobileSwitch();
+    
     
 });
  function loadTx(){
@@ -676,10 +1218,11 @@ $(document).ready(function(){
        
      
      //determine the start and end date of their subscription
-               var username= localStorage.getItem("user_email");
+               var user= localStorage.getItem("user_email");
        var tod = new Date();
                 var filter = new Everlive.Query();
-                filter.where().and().eq('AccountEmail', username).orderDesc('SubscriptionEndDate');
+                
+                 filter.where().eq('AccountEmail',user);
 
                 var data = el.data('Subscription');
                 data.get(filter)
@@ -746,7 +1289,7 @@ $(document).ready(function(){
                                                 $('#lblTxType').text("Bronze");
                                                  $('#lblTxDays').text("+(30)");
 
-                                                             today = new Date();
+                                                             today = new Date(dat);
                                                            tomorrow = new Date(dat);
                                                             tomorrow.setDate(dat.getDate()+30);
 
@@ -756,7 +1299,7 @@ $(document).ready(function(){
                                                  $('#lblTxType').text("Silver");
                                                  $('#lblTxDays').text("+(90)");
 
-                                                            today = new Date();
+                                                            today = new Date(dat);
                                                           tomorrow = new Date(dat);
                                                             tomorrow.setDate(dat.getDate()+90);
 
@@ -765,7 +1308,7 @@ $(document).ready(function(){
                                                  $('#lblTxType').text("Gold");
                                                  $('#lblTxDays').text("+(185)");
 
-                                                           today = new Date();
+                                                           today = new Date(dat);
                                                           tomorrow = new Date(dat);
                                                             tomorrow.setDate(dat.getDate()+185);
 
@@ -774,7 +1317,7 @@ $(document).ready(function(){
                                                  $('#lblTxType').text("Platinum");
                                                  $('#lblTxDays').text("+(365)");
 
-                                                             today = new Date();
+                                                             today = new Date(dat);
                                                             tomorrow = new Date(dat);
                                                             tomorrow.setDate(dat.getDate()+365);
 
@@ -928,20 +1471,28 @@ function displayContent(data){
    $("#story-scroller").kendoMobileScroller();
      $("#more-scroller").kendoMobileScroller();
    
-    app.navigate('#ArticleDetails');
- 
+    app.navigate('#ArticleDetails',"slide:right");
+  
+     $("#story-scroller").data("kendoMobileScroller").scrollTo(0, 0);
     
+}
+function js_page_side(e) {
+    e.view.scroller.reset(); //reset the scroller
 }
  function updateStorage(){
      //for the news
+ 
      $.ajax({
                 type:"GET", 
                  data:'',
                  dataType: "jsonp",
                 url: "http://www.gazettebw.com/api/get_category_posts/?callback=show_posts_widget&category_id=33&count=20", 
                 success: function(data) {
-                    
-                    customDataSuccess_news(data)
+                   
+                         customDataSuccess_news(data);
+                       
+                 
+             
                     }, 
                 error: function(jqXHR, textStatus, errorThrown) {
                         alert(jqXHR.status);
@@ -1011,20 +1562,45 @@ function displayContent(data){
             });
      
  }
- function customDataSuccess_news(data){
+function customDataSuccess_news(data){
     
      try{
-      
+      var cat ="";
      for(var i=0;i<data.posts.length;i++){
      //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
           try{
+              
                 var convertedStartDate = data.posts[i].date;
         var month = convertedStartDate.split(" ");
         
         var shortDate = month[0];
-   try{
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate)
-         for(var t = 0;t<data.posts[i].categories.length;t++){
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
             saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
         }
          }
@@ -1046,36 +1622,45 @@ function displayContent(data){
      
     
   }
- function customDataSuccess_sports(data){
-  
- 
+function customDataSuccess_sports(data){
+    
+     try{
+      var cat ="";
      for(var i=0;i<data.posts.length;i++){
-          var convertedStartDate = data.posts[i].date;
+     //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
+          try{
+              
+                var convertedStartDate = data.posts[i].date;
         var month = convertedStartDate.split(" ");
-        var shortDate = month[0];
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].attachments[0].images.full.url,data.posts[i].date,shortDate)
-      for(var t = 0;t<data.posts[i].categories.length;t++){
-            saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
-        }
-     //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
-      
-     }
-    
-    
- 
-  }
- function customDataSuccess_life(data){
-    
-      if(data.posts.length>0){
-     for(var i=0;i<data.posts.length;i++){
-     //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
-            var convertedStartDate = data.posts[i].date;
-      var month = convertedStartDate.split(" ");
         
         var shortDate = month[0];
-         try{
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].attachments[0].images.full.url,data.posts[i].date,shortDate)
-         for(var t = 0;t<data.posts[i].categories.length;t++){
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
             saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
         }
          }
@@ -1083,169 +1668,281 @@ function displayContent(data){
              console.log(e);
          }
        
+        }
+         catch(e){
+             console.log(e);
+         }
+   
      }
-      }
+      
+     }
+     catch(e){
+         console.log(e);
+     }
      
+    
+  }
+ function customDataSuccess_life(data){
+    
+     try{
+      var cat ="";
+     for(var i=0;i<data.posts.length;i++){
+     //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
+          try{
+              
+                var convertedStartDate = data.posts[i].date;
+        var month = convertedStartDate.split(" ");
+        
+        var shortDate = month[0];
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
+            saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
+        }
+         }
+         catch(e){
+             console.log(e);
+         }
+       
+        }
+         catch(e){
+             console.log(e);
+         }
+   
+     }
+      
+     }
+     catch(e){
+         console.log(e);
+     }
+     
+    
   }
  function customDataSuccess_tech(data){
-   
-      if(data.posts.length>0){
+    
+     try{
+      var cat ="";
      for(var i=0;i<data.posts.length;i++){
      //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
-          var convertedStartDate =  data.posts[i].date;
-         var month = convertedStartDate.split(" ");
+          try{
+              
+                var convertedStartDate = data.posts[i].date;
+        var month = convertedStartDate.split(" ");
         
         var shortDate = month[0];
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,shortDate)
-           for(var t = 0;t<data.posts[i].categories.length;t++){
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
             saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
         }
-        
+         }
+         catch(e){
+             console.log(e);
+         }
+       
+        }
+         catch(e){
+             console.log(e);
+         }
+   
      }
-      }
+      
+     }
+     catch(e){
+         console.log(e);
+     }
+     
     
-   
   }
- function customDataSuccess_money(data){
-   
-      if(data.posts.length>0){
+function customDataSuccess_money(data){
+    
+     try{
+      var cat ="";
      for(var i=0;i<data.posts.length;i++){
      //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
-            var convertedStartDate =  data.posts[i].date;
-           var month = convertedStartDate.split(" ");
-
-                var shortDate = month[0];
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate)
-          for(var t = 0;t<data.posts[i].categories.length;t++){
-            saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
-        }
-         
-        
-     }
-      }
-    
- 
-  }
- function customDataSuccess_world(data){
- 
-      if(data.posts.length>0){
-             for(var i=0;i<data.posts.length;i++){
-             //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
-                    var convertedStartDate =  data.posts[i].date;
-       var month = convertedStartDate.split(" ");
+          try{
+              
+                var convertedStartDate = data.posts[i].date;
+        var month = convertedStartDate.split(" ");
         
         var shortDate = month[0];
-          SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate)
-         for(var t = 0;t<data.posts[i].categories.length;t++){
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
             saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
         }
-                 
-                 
-                 
-             }
-      }
+         }
+         catch(e){
+             console.log(e);
+         }
+       
+        }
+         catch(e){
+             console.log(e);
+         }
+   
+     }
+      
+     }
+     catch(e){
+         console.log(e);
+     }
+     
     
- 
+  }
+function customDataSuccess_world(data){
+    
+     try{
+      var cat ="";
+     for(var i=0;i<data.posts.length;i++){
+     //ARTICLES MUST ALSO BE SAVE TO LOCAL STORAGE
+          try{
+              
+                var convertedStartDate = data.posts[i].date;
+        var month = convertedStartDate.split(" ");
+        
+        var shortDate = month[0];
+               for(var t = 0;t<data.posts[i].categories.length;t++){
+          switch(data.posts[i].categories[t].id){
+                 case 33:
+                  cat = 33;
+                  break;
+                   case 10:
+                      cat = 10;
+                  break;
+                   case 14:
+                      cat = 14;
+                  break;
+                   case 15:
+                      cat =15;
+                  break;
+                   case 31:
+                      cat = 31;
+                  break;
+                   case 35:
+                      cat = 35;
+                  break;
+                  
+          }
+                      SaveArticle_toDevice(data.posts[i].id,data.posts[i].title,data.posts[i].url,data.posts[i].content,data.posts[i].thumbnail_images.full.url,data.posts[i].date,shortDate,cat)
+       
+        }
+       try{
+        for(var t = 0;t<data.posts[i].categories.length;t++){
+            saveArticle_Category(data.posts[i].id,data.posts[i].categories[t].id);
+        }
+         }
+         catch(e){
+             console.log(e);
+         }
+       
+        }
+         catch(e){
+             console.log(e);
+         }
+   
+     }
+      
+     }
+     catch(e){
+         console.log(e);
+     }
+     
+    
   }
 function cardEntry() {
-    var no = $("#txtcardno").val();
     
+     if($("#txtCardHolderName").val().length==0||$("#txtCVC").val().length==0||$("#txtCardNumber").val().length==0){
+
+         alert("Cannot leaave blank fields");
+     }
+    else if($("#txtCardNumber").val().length!=16)
+    {
+        alert("Card Number Too Short!");
+    }
+    else if ($("#txtCVC").val().length!=3){
+        alert("CVC Number too short");
+    }
+    else{
+     localStorage.setItem("CardHolderName", $("#txtCardHolderName").val());
+     localStorage.setItem("CardNo", $("#txtCardNumber").val());
+      localStorage.setItem("CardCVC", $("#txtCVC").val());
+      localStorage.setItem("CardExpiry", $("#txtMonth").val());
      
- //   if (no.length == 16) {
-        switch (step) {
-            case 0:
-                 $('#cardInr').css("left","-400px");
-                $('#txtcardno').css("width", "0px");
-                $('#txtcardno').css("opacity", "0");
-                localStorage.setItem("CardHolderName", $("#txtcardno").val());
-                  $('.CardLoad').css("opacity","0");
-                
-                window.setTimeout(function () {
-                      $('.CardLoad').css("background-image", 'url("images/card-number.jpg")');
-                                     $('#cardInr').text("Enter Card Number");
-                                    $('#cardInr').css("left","0px");
-
-                      $('.CardLoad').css("opacity","1");
-                    $('#txtcardno').css("opacity", "1");
-                    clearTextBox("txtcardno");
-                    //$("#txtcardno").kendoMaskedTextBox({
-                    //    mask: "000"
-                    //});
-                    $('#txtcardno').attr("placeholder", "Bank Card #");
-                    $('#txtcardno').attr("maxlength", 16);
-          
-                    $('#txtcardno').css("width", "78%");
-                    
-                }, 2000);
- 
-                break;
-            case 1:
-                //card number
-               $('#cardInr').css("left","-400px");
-                $('#txtcardno').css("width", "0px");
-                $('#txtcardno').css("opacity", "0");
-                localStorage.setItem("CardNo", $("#txtcardno").val());
-                  $('.CardLoad').css("opacity","0");
-                
-                window.setTimeout(function () {
-                      $('.CardLoad').css("background-image", 'url("images/security-code.jpg")');
-                                     $('#cardInr').text("Enter CVC Number");
-                                    $('#cardInr').css("left","0px");
-
-                      $('.CardLoad').css("opacity","1");
-                    $('#txtcardno').css("opacity", "1");
-                    clearTextBox("txtcardno");
-                    //$("#txtcardno").kendoMaskedTextBox({
-                    //    mask: "000"
-                    //});
-                    $('#txtcardno').attr("placeholder", "CVC #");
-                    $('#txtcardno').attr("maxlength", 3);
-          
-                    $('#txtcardno').css("width", "78%");
-                    
-                }, 2000);
-
-
-                break;
-            case 2:
-                //cvc
-                   
-                                    $('#cardInr').css("left","-400px");
-                $('#txtcardno').css("width", "0px");
-                localStorage.setItem("CardCVC", $("#txtcardno").val());
-                  $('.CardLoad').css("opacity","0");
-                                     
-
-                window.setTimeout(function () {
-                    clearTextBox("txtcardno");
-                    $('#cardInr').text("Card Expiry Date");
-                 
-                                    $('#cardInr').css("left","0px");
-                     $('.CardLoad').css("background-image", 'url("images/start-end-date.jpg")');
-                    $('#txtcardno').css("display", "none");
-                       $('.CardLoad').css("opacity","1")
-                }, 2000);
-                window.setTimeout(function () {
-                    $('#txtexpdate').css("width", "0%");
-                    $('#txtexpdate').css("display", "inline-block");
-                }, 2500);
-                window.setTimeout(function () {
-
-                    $('#txtexpdate').css("width", "83%");
-
-                }, 3000);
-                break;
-            case 3:
-                localStorage.setItem("CardExpiry", $("#txtmonth").val());
-                app.navigate("#PaymentConfirmation");
-                step= -1
-           //TOAST required
-                //exp date
-                break;
-           
-
-        }
-        step += 1;
+     app.navigate("#PaymentConfirmation","slide:left");
+     }
     
 }
 function clearTextBox(txBox) {
@@ -1254,46 +1951,36 @@ function clearTextBox(txBox) {
     $("#" + txBox).val(temp);
 }
 function FB_Login(){
-     $.ajax({
-
-                      type: "GET",
-                      dataType: "json",
-                      url: "http://www.gazettebw.com/api/user/fb_connect/?access_token=" + facebook_access_token,
-                      data: '',
-                      success: function( response ) 
-                      { 
-                             
-                      },
-                      error: function( error )
-                      {
-
-                         alert( error.message );
-
-                      }
-
-                   });
+     var accessToken = facebook_access_token;
+    Everlive.$.Users.loginWithFacebook(accessToken,
+    function (data) {
+        alert(JSON.stringify(data));
+    },
+    function(error){
+        alert(JSON.stringify(error));
+    }
+);
 }
 function confirmPayment(){
+     app.pane.loader.show();
     var user = localStorage.getItem("user_email");
     var dt = localStorage.getItem("CardExpiry");
     var type= localStorage.getItem("subscription-type");
     var start= localStorage.getItem("subscription-start");
     var end = localStorage.getItem("subscription-end");
     var amount = localStorage.getItem("subscription-value");
-   
-   
+    var holder = localStorage.getItem("CardHolder");
+    var cardno =localStorage.getItem("CardNo");
+     var cvc=localStorage.getItem("CardNo");
+   var mt = dt.split("-");
+    var yr= mt[0];
+    var m=mt[1];
+    var desc = "Gazette mobile subscription starting (" + start + "). Valid Until (" + end + ")";
+    requestAuthorisationForm(holder,cardno, m, yr, cvc,amount,desc);
     
     
     
-    var data = el.data('Subscription');
-        data.create({ 'AccountEmail':user, 'SubscriptionType':type,'SubscriptionEndDate':end,'TransactionDate':start,'AmountPaid':amount },
-    function(data){
-        alert(JSON.stringify(data));
-    app.navigate('#GazetteHome');
-    },
-    function(error){
-        alert(JSON.stringify(error));
-    });
+    
     
 }
 //DATABASE FUNCTIONS
@@ -1346,8 +2033,28 @@ function clearRegistration(){
     $('#regPIN').val('');
     $('#regCPIN').val('');
 }
-function setupAccountDetails(){
-    
+
+function ResetPassword(){
+     app.pane.loader.show();
+    var mail =$('#txtEmailReset').val();
+    var object = { "Email": mail};
+            $.ajax({
+                type: "POST",
+                url: 'http://api.everlive.com/v1/OLUBGHjEPn5OFr3O/Users/resetpassword',
+                contentType: "application/json",
+                data: JSON.stringify(object),
+                success: function(data) {
+                     app.pane.loader.hide();
+                    alert("Password is reset.");
+                    $('#txtEmailReset').val('');
+                    app.navigate("#Login","slide:left");
+                },
+                error: function(error) {
+                     app.pane.loader.hide();
+                    alert(JSON.stringify(error));
+                    $('#txtEmailReset').val('');
+                }
+            });
 }
 
 

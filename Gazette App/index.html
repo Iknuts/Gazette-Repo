@@ -24,6 +24,7 @@
     
  <link href="styles/gazette.css" rel="stylesheet">
    <script src="scripts/modernizr.custom.63321.js"></script>
+  
 
     <script src="kendo/js/jquery.min.js"></script>
       <script src="scripts/jquery-1.9.1.min.js"></script>
@@ -50,9 +51,7 @@
      
          <script src="https://bs-static.cdn.telerik.com/1.2.13/everlive.all.min.js"></script>
     			
-    <script src="scripts/app.js"></script>
-
-   
+ 
 <script src="scripts/owl.carousel.min.js"></script>
   
     <script src="scripts/gazette.js"></script>
@@ -222,6 +221,10 @@ Newspapers
       <li>
         <a onclick="View_Category(35,'GLOBAL')">World</a>
       </li>
+        <li data-role="list-divider" style="color:red" >My Articles</li>
+         <li data-icon="favorites">
+        <a onclick="logout()">LOG OUT</a>
+      </li>
     </ul>
       
   </div>       
@@ -324,7 +327,7 @@ Newspapers
        
             <li class="login">
             <ul style="border:1px solid white">
-                <li><label> <input type="Email" id="txtLogin" placeholder="Email Address"/>Email: </label></li>
+                <li><label> <input type="Email" id="txtEmailReset" placeholder="Email Address"/>Email: </label></li>
                
                 
                 </ul>
@@ -333,7 +336,7 @@ Newspapers
              
                   <li>
                  
-                        <a data-role="button"  class="loginbutton"   id="btnlogin">Send</a> &nbsp;
+                        <a data-role="button"  class="loginbutton" onclick="Reset"   id="btnlogin">Send</a> &nbsp;
                
                   <a data-role="backbutton" id="btnregister" class="loginbutton">Cancel</a>
              
@@ -388,7 +391,7 @@ Newspapers
                </div>
         <ul data-role="listview" data-style="inset" >
             <li class="subscription-item"><a onclick="selectSubscription('bronze')" data-role="button"><img src="images/bronze.png"/></a></li>
-             <li class="subscription-item"><a  onclick="selectSubscription('sliver')"  data-role="button"><img src="images/silver.png"/></a></li>
+             <li class="subscription-item"><a  onclick="selectSubscription('silver')"  data-role="button"><img src="images/silver.png"/></a></li>
              <li class="subscription-item"><a  onclick="selectSubscription('gold')"  data-role="button"><img src="images/gold.png"/></a></li>
              <li class="subscription-item"><a  onclick="selectSubscription('platinum')"  data-role="button"><img src="images/platinum.png"/></a></li>
         </ul>
@@ -461,7 +464,7 @@ Newspapers
                 </li>
                 </ul></li>
                  <li data-role="list-divider">
-            Worled News
+            World News
             </li>
             <li>
             <ul>
@@ -531,7 +534,7 @@ Newspapers
        
     </ul>
     </div>
-  <div id="ArticleDetails" data-transition="zoom" data-role="view"   data-layout="read">
+  <div id="ArticleDetails" data-transition="zoom" data-role="view" data-show="js_page_side"  data-layout="read">
  <div  >
      <ul data-role="listview" data-style="inset" data-type="group">
          <li data-role="list-divider" style="color:white;background-color:red"> <h2 id="article-title">
@@ -663,26 +666,44 @@ Newspapers
            </li>
        </ul>
     </div>
- <div id="AddCard" data-role="view" data-title="Payments" data-layout="default">
-       
-        <br />
-     <br>
-        <h1  id="cardInr">Enter Card Details</h1>
-        <br />
-     <br><br>
-          <form class="searchform">
-	<input class="searchfield" type="text" id="txtcardno" tabindex="0"   maxlength="16"  placeholder="Card Holder Name" />
-	
-              <div class="searchfield" id="txtexpdate">
-          <input class="searchfield"  type="month" id="txtmonth" tabindex="2"    />
-                  </div>
-	
-        <input class="searchbutton" type="button" onclick="cardEntry()" value="Go" />
+    <div id="CardError" data-layout="default" data-role="view">
+        <div class="profile">
+            <div class="status_red">
+            </div>
+            <h2>
+               Sorry, an <span>Error</span>occured while processing your transaction....
+            </h2>
+        </div>
+        <p stylle="font-weight:bold">
+            Please review the error below:
+        </p>
+        <p  id="card-error-details">
             
-</form>
-          <div class="CardLoad">
-      
-              </div>
+        </p>
+    </div>
+ <div id="AddCard" data-role="view" data-title="Payments" data-layout="default">
+       <div class="profile">
+           <h2>
+              
+               <span>Secure</span>
+               Payments by
+           </h2>
+     </div>
+     <img src="images/visa_VCS.jpg" style="width:100%"/>
+      <ul data-role="listview"  data-style="inset">
+         
+         <li><label><input type="text" id="txtCardHolderName" placeholer="..." maxlength="30" />Card Holder Name</label></li>
+          <li><label><input type="text" id="txtCardNumber" placeholer="..." maxlength="16" />Card Number</label></li>
+          <li><label><input type="text" id="txtCVC" placeholer="..." maxlength="3" />Card CVC</label></li>
+          <li><label><input type="month" id="txtMonth" placeholer="..." maxlength="30" />Card Expiry</label></li>
+          
+          
+              <li>
+              <a data-role="button" onclick="cardEntry()"  >CONTINUE</a>
+              </li>
+          
+         
+     </ul>
     </div>
     <div id="Subscriptions" data-role="view"  data-layout="default">
         
@@ -728,7 +749,10 @@ Newspapers
                 }
 		</script>
                 <script src="scripts/jquery.pagepiling.min.js"></script>
-   
+                     <script src="scripts/VCS.js"></script>
+    <script src="scripts/jquery.xml2json.js"></script>
+    <script src="scripts/app.js"></script>
 
+   
 </body>
 </html>

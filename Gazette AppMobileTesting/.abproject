@@ -1,0 +1,8 @@
+{
+  "ProjectName": "Gazette AppMobileTesting",
+  "ProjectGuid": "fa55fa3f-a407-4e9d-89e3-3a16a2cacc0c",
+  "projectVersion": 1,
+  "ProjectTypeGuids": "{6319b66f-8dff-4073-91be-3cd48a2fdeb3}",
+  "FrameworkVersion": "1.0",
+  "Framework": "MobileTesting"
+}
